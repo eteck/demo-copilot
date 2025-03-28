@@ -1,0 +1,88 @@
+openapi: 3.0.3
+info:
+  title: BNM API
+  description: API para gestionar transacciones de usuarios
+  version: 1.0.0
+servers:
+  - url: https://api.bnm.com/v1
+    description: Servidor principal
+
+paths:
+  /transactions:
+    post:
+      summary: Crear una nueva transacción
+      description: Recibe los datos de la cuenta de un usuario, monto de la transacción y descripción.
+      operationId: createTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionRequest'
+      responses:
+        '201':
+          description: Transacción creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Solicitud inválida
+        '401':
+          description: No autorizado
+        '500':
+          description: Error interno del servidor
+      security:
+        - oauth2: [write:transactions]
+
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.bnm.com/oauth/authorize
+          tokenUrl: https://auth.bnm.com/oauth/token
+          scopes:
+            write:transactions: Permite crear transacciones
+            read:transactions: Permite leer transacciones
+
+  schemas:
+    TransactionRequest:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: ID de la cuenta del usuario
+        amount:
+          type: number
+          format: double
+          description: Monto de la transacción
+        description:
+          type: string
+          description: Descripción de la transacción
+      required:
+        - accountId
+        - amount
+        - description
+
+    TransactionResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          description: ID de la transacción
+        accountId:
+          type: string
+          description: ID de la cuenta del usuario
+        amount:
+          type: number
+          format: double
+          description: Monto de la transacción
+        description:
+          type: string
+          description: Descripción de la transacción
+        timestamp:
+          type: string
+          format: date-time
+          description: Fecha y hora de la transacción
